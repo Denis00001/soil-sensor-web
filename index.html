@@ -1,10 +1,272 @@
 <!DOCTYPE html>
-<html>
-<head><title>Install Soil Sensor</title></head>
-<body>
-    <h1>Прошивка датчика влажности</h1>
-    <!-- Скрипт от Google/ESPHome для прошивки через браузер -->
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soil Sensor Setup | Настройка датчика</title>
+    <!-- Подключаем скрипт для прошивки -->
     <script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js/?module"></script>
-    <esp-web-install-button manifest="manifest.json"></esp-web-install-button>
+    <style>
+        :root {
+            --primary: #3498db;
+            --success: #27ae60;
+            --warning: #d35400;
+            --bg: #f4f7f6;
+            --card-bg: #ffffff;
+            --text: #2c3e50;
+            --text-light: #7f8c8d;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #1a1a1a;
+                --card-bg: #2c2c2c;
+                --text: #ecf0f1;
+                --text-light: #bdc3c7;
+            }
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .lang-switcher {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+
+        button.lang-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: opacity 0.3s;
+        }
+
+        button.lang-btn:hover { opacity: 0.8; }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-left: 5px solid var(--primary);
+        }
+
+        h1 { margin-bottom: 10px; }
+        h2 { color: var(--primary); font-size: 1.4em; margin-top: 0; }
+        
+        .step-num {
+            background: var(--primary);
+            color: white;
+            width: 30px;
+            height: 30px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            margin-right: 10px;
+            font-size: 0.9em;
+        }
+
+        .pin-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+
+        .pin-table td {
+            padding: 12px;
+            border: 1px solid var(--text-light);
+        }
+
+        .pin-table tr:first-child { font-weight: bold; background: rgba(52, 152, 219, 0.1); }
+
+        .install-box {
+            text-align: center;
+            padding: 30px;
+            background: rgba(46, 204, 113, 0.1);
+            border-radius: 10px;
+            border: 2px dashed var(--success);
+        }
+
+        .warning-text {
+            color: var(--warning);
+            font-weight: bold;
+            font-size: 0.9em;
+            display: block;
+            margin-top: 10px;
+        }
+
+        code {
+            background: rgba(231, 76, 60, 0.1);
+            color: #e74c3c;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
+        footer { text-align: center; color: var(--text-light); margin-top: 50px; font-size: 0.8em; }
+
+        /* Скрываем элементы другого языка */
+        [lang="en"] { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="lang-switcher">
+        <button class="lang-btn" onclick="toggleLang()">Switch to English</button>
+    </div>
+
+    <div class="container">
+        <header>
+            <h1 id="main-title">🌱 Soil Sensor Setup</h1>
+            <p id="sub-title">Инструкция по настройке датчика влажности на базе ESP32</p>
+        </header>
+
+        <!-- Шаг 1: Железо -->
+        <div class="card">
+            <h2><span class="step-num">1</span> <span class="t-hw-title">Сборка (Hardware)</span></h2>
+            <p class="t-hw-desc">Используйте ESP32 DevKit и емкостный датчик. Соедините их проводами:</p>
+            <table class="pin-table">
+                <tr class="t-table-head"><td>Датчик</td><td>Провод</td><td>ESP32</td></tr>
+                <tr><td>VCC</td><td>Красный</td><td>3V3</td></tr>
+                <tr><td>GND</td><td>Черный</td><td>GND</td></tr>
+                <tr><td>AOUT</td><td>Желтый</td><td><b>GPIO 34</b></td></tr>
+            </table>
+            <span class="warning-text t-hw-warn">⚠ Важно: используйте GPIO 34 для корректного считывания данных.</span>
+        </div>
+
+        <!-- Шаг 2: Прошивка -->
+        <div class="card">
+            <h2><span class="step-num">2</span> <span class="t-flash-title">Прошивка</span></h2>
+            <p class="t-flash-desc">Подключите плату к USB и нажмите кнопку ниже. Браузер запросит доступ к последовательному порту.</p>
+            <div class="install-box">
+                <esp-web-install-button manifest="manifest.json">
+                    <button slot="activate">INSTALL FIRMWARE</button>
+                </esp-web-install-button>
+            </div>
+            <p style="font-size: 0.85em; margin-top: 10px;">* Рекомендуется Chrome или Edge.</p>
+        </div>
+
+        <!-- Шаг 3: Wi-Fi -->
+        <div class="card">
+            <h2><span class="step-num">3</span> <span class="t-wifi-title">Настройка Wi-Fi</span></h2>
+            <p class="t-wifi-desc">После прошивки датчик создаст сеть <code>Soil-Sensor-Setup</code>. Подключитесь к ней с телефона, выберите домашний Wi-Fi и введите пароль. Плата перезагрузится и подключится к вашей сети.</p>
+        </div>
+
+        <!-- Шаг 4: Приложение -->
+        <div class="card">
+            <h2><span class="step-num">4</span> <span class="t-app-title">Связь с приложением</span></h2>
+            <p class="t-app-desc">В приложении введите адрес: <code>https://moisture.local</code>. Если не работает, найдите IP адрес в роутере.</p>
+        </div>
+
+        <!-- Шаг 5: Калибровка -->
+        <div class="card">
+            <h2><span class="step-num">5</span> <span class="t-cal-title">Калибровка</span></h2>
+            <p class="t-cal-desc">Это критический этап для точности:</p>
+            <ol>
+                <li class="t-cal-1"><b>Сухо:</b> Зажмите надпись "Влажность" в приложении, чтобы увидеть <b>Raw Value</b>. Запишите его в поле "Сухо" (датчик в воздухе).</li>
+                <li class="t-cal-2"><b>Вода:</b> Опустите датчик в воду и запишите новое значение в поле "Вода".</li>
+                <li class="t-cal-3">Нажмите <b>"Откалибровать"</b>. Теперь 0% — сухо, 100% — вода.</li>
+            </ol>
+        </div>
+
+        <footer>
+            Built with ❤️ for plants | 2026
+        </footer>
+    </div>
+
+    <script>
+        const translations = {
+            ru: {
+                title: "🌱 Soil Sensor Setup",
+                subtitle: "Инструкция по настройке датчика влажности на базе ESP32",
+                hwTitle: "Сборка (Hardware)",
+                hwDesc: "Используйте ESP32 DevKit и емкостный датчик. Соедините их проводами:",
+                tableHead: "<td>Датчик</td><td>Провод</td><td>ESP32</td>",
+                hwWarn: "⚠ Важно: используйте GPIO 34 для корректного считывания данных.",
+                flashTitle: "Прошивка",
+                flashDesc: "Подключите плату к USB и нажмите кнопку ниже. Браузер запросит доступ к последовательному порту.",
+                wifiTitle: "Настройка Wi-Fi",
+                wifiDesc: "После прошивки датчик создаст сеть <code>Soil-Sensor-Setup</code>. Подключитесь к ней с телефона, выберите домашний Wi-Fi и введите пароль.",
+                appTitle: "Связь с приложением",
+                appDesc: "В приложении введите адрес: <code>https://moisture.local</code>. Если не работает, используйте IP адрес.",
+                calTitle: "Калибровка",
+                calDesc: "Это критический этап для точности:",
+                cal1: "<b>Сухо:</b> Зажмите надпись 'Влажность' в приложении, чтобы получить <b>Raw Value</b>. Запишите его в поле 'Сухо'.",
+                cal2: "<b>Вода:</b> Опустите датчик в воду и запишите новое значение в поле 'Вода'.",
+                cal3: "Нажмите <b>'Откалибровать'</b>.",
+                btn: "Switch to English"
+            },
+            en: {
+                title: "🌱 Soil Sensor Setup",
+                subtitle: "Moisture sensor setup guide for ESP32",
+                hwTitle: "Hardware Assembly",
+                hwDesc: "Use ESP32 DevKit and a capacitive sensor. Connect wires as shown:",
+                tableHead: "<td>Sensor</td><td>Wire</td><td>ESP32</td>",
+                hwWarn: "⚠ Important: Use GPIO 34 for correct data reading.",
+                flashTitle: "Flashing",
+                flashDesc: "Connect the board via USB and click the button. The browser will request access to the serial port.",
+                wifiTitle: "Wi-Fi Configuration",
+                wifiDesc: "After flashing, the sensor creates a <code>Soil-Sensor-Setup</code> network. Connect via phone, pick your Wi-Fi, and enter the password.",
+                appTitle: "App Link",
+                appDesc: "Enter the URL in the app: <code>https://moisture.local</code>. Use the local IP if mDNS fails.",
+                calTitle: "Calibration",
+                calDesc: "Critical stage for accuracy:",
+                cal1: "<b>Dry:</b> Long-press the 'Humidity' text in the app to see the <b>Raw Value</b>. Enter it in the 'Dry' field.",
+                cal2: "<b>Wet:</b> Submerge sensor in water and enter the value in the 'Wet' field.",
+                cal3: "Click <b>'Calibrate'</b>.",
+                btn: "Переключить на Русский"
+            }
+        };
+
+        let currentLang = 'ru';
+
+        function toggleLang() {
+            currentLang = currentLang === 'ru' ? 'en' : 'ru';
+            const t = translations[currentLang];
+            
+            document.getElementById('main-title').innerText = t.title;
+            document.getElementById('sub-title').innerText = t.subtitle;
+            document.querySelector('.t-hw-title').innerText = t.hwTitle;
+            document.querySelector('.t-hw-desc').innerText = t.hwDesc;
+            document.querySelector('.t-table-head').innerHTML = t.tableHead;
+            document.querySelector('.t-hw-warn').innerText = t.hwWarn;
+            document.querySelector('.t-flash-title').innerText = t.flashTitle;
+            document.querySelector('.t-flash-desc').innerText = t.flashDesc;
+            document.querySelector('.t-wifi-title').innerText = t.wifiTitle;
+            document.querySelector('.t-wifi-desc').innerHTML = t.wifiDesc;
+            document.querySelector('.t-app-title').innerText = t.appTitle;
+            document.querySelector('.t-app-desc').innerHTML = t.appDesc;
+            document.querySelector('.t-cal-title').innerText = t.calTitle;
+            document.querySelector('.t-cal-desc').innerText = t.calDesc;
+            document.querySelector('.t-cal-1').innerHTML = t.cal1;
+            document.querySelector('.t-cal-2').innerHTML = t.cal2;
+            document.querySelector('.t-cal-3').innerHTML = t.cal3;
+            document.querySelector('.lang-btn').innerText = t.btn;
+        }
+    </script>
 </body>
 </html>
