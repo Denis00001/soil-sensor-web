@@ -166,8 +166,21 @@
                 <esp-web-install-button manifest="manifest.json">
                     <button slot="activate">INSTALL FIRMWARE</button>
                 </esp-web-install-button>
+                <div id="status-console" style="margin-top:20px; font-weight:bold; color:var(--primary);">
+                    Статус: Ожидание подключения...
+                </div>
             </div>
             <p style="font-size: 0.85em; margin-top: 10px;">* Рекомендуется Chrome или Edge.</p>
+        </div>
+
+        <div class="card" style="border-left-color: var(--warning);">
+            <h2 style="color: var(--warning);">⚠ Если компьютер не видит плату</h2>
+            <p>Для того чтобы браузер смог "пообщаться" с ESP32, вашему компьютеру нужны драйверы. Посмотрите на маленькую прямоугольную микросхему рядом с USB-портом на плате:</p>
+            <ul>
+                <li><b>Микросхема квадратная (CP2102):</b> <a href="https://www.silabs.com/developers/usb-to-uart-bridge-vcp-drivers" target="_blank">Скачать драйвер CP210x</a></li>
+                <li><b>Микросхема прямоугольная (CH340):</b> <a href="https://learn.sparkfun.com/tutorials/how-to-install-ch340-drivers/all" target="_blank">Скачать драйвер CH340</a></li>
+            </ul>
+            <p class="warning-text">После установки драйвера обязательно перезагрузите браузер!</p>
         </div>
 
         <!-- Шаг 3: Wi-Fi -->
@@ -241,6 +254,18 @@
                 btn: "Переключить на Русский"
             }
         };
+
+        const installButton = document.querySelector('esp-web-install-button');
+        const statusConsole = document.getElementById('status-console');
+    
+        installButton.addEventListener('state-changed', (ev) => {
+            const state = ev.detail.state;
+            if (state === 'INITIALIZING') statusConsole.innerText = "Статус: Поиск устройства...";
+            if (state === 'CONNECTING') statusConsole.innerText = "Статус: Подключение...";
+            if (state === 'INSTALLING') statusConsole.innerText = "Статус: Идет прошивка... Не отключайте кабель!";
+            if (state === 'FINISHED') statusConsole.innerText = "Статус: Готово! Плата успешно прошита.";
+            if (state === 'ERROR') statusConsole.innerText = "Статус: Ошибка. Проверьте кабель или драйвер.";
+        });
 
         let currentLang = 'ru';
 
