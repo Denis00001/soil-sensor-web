@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Soil Sensor Setup | Настройка датчика</title>
+    <title>Soil Sensor Setup | Полная настройка</title>
     <script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"></script>
     <style>
         :root {
@@ -11,23 +11,24 @@
             --success: #27ae60;
             --warning: #e67e22;
             --danger: #e74c3c;
-            --bg: #f4f7f6;
+            --bg: #f8fafc;
             --card-bg: #ffffff;
-            --text: #2c3e50;
-            --text-light: #7f8c8d;
+            --text: #1e293b;
+            --text-light: #64748b;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
         }
 
         @media (prefers-color-scheme: dark) {
             :root {
-                --bg: #1a1a1a;
-                --card-bg: #2c2c2c;
-                --text: #ecf0f1;
-                --text-light: #bdc3c7;
+                --bg: #0f172a;
+                --card-bg: #1e293b;
+                --text: #f1f5f9;
+                --text-light: #94a3b8;
             }
         }
 
         body {
-            font-family: 'Segoe UI', system-ui, sans-serif;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
             background-color: var(--bg);
             color: var(--text);
             line-height: 1.6;
@@ -36,64 +37,90 @@
         }
 
         .container {
-            max-width: 800px;
-            margin: 40px auto;
-            padding: 20px;
+            max-width: 850px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .alert-protocol {
+            background: rgba(231, 76, 60, 0.1);
+            border: 2px solid var(--danger);
+            color: var(--danger);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: none;
+            font-weight: 500;
         }
 
         .lang-switcher {
             display: flex;
             justify-content: flex-end;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
 
-        button.lang-btn {
+        .lang-btn {
             background: var(--primary);
             color: white;
             border: none;
-            padding: 8px 20px;
-            border-radius: 20px;
+            padding: 10px 20px;
+            border-radius: 50px;
             cursor: pointer;
-            font-weight: bold;
+            font-weight: 600;
+            transition: transform 0.2s;
         }
+
+        .lang-btn:hover { transform: scale(1.05); }
+
+        header { text-align: center; margin-bottom: 40px; }
+        header h1 { font-size: 2.2rem; margin-bottom: 10px; }
 
         .card {
             background: var(--card-bg);
-            border-radius: 15px;
-            padding: 25px;
+            border-radius: 16px;
+            padding: 30px;
             margin-bottom: 25px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            border-left: 5px solid var(--primary);
+            box-shadow: var(--shadow);
+            border-left: 6px solid var(--primary);
         }
 
-        .alert-danger {
-            background: rgba(231, 76, 60, 0.1);
-            border: 2px solid var(--danger);
-            color: var(--danger);
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            display: none; /* Покажем через JS если протокол не тот */
-        }
-
+        .step-header { display: flex; align-items: center; margin-bottom: 20px; }
         .step-num {
             background: var(--primary);
             color: white;
-            width: 28px;
-            height: 28px;
-            display: inline-flex;
+            width: 35px;
+            height: 35px;
+            display: flex;
             align-items: center;
             justify-content: center;
             border-radius: 50%;
-            margin-right: 10px;
-            font-size: 0.8em;
-            vertical-align: middle;
+            margin-right: 15px;
+            font-weight: bold;
         }
+
+        .cable-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 15px 0;
+        }
+
+        .cable-box {
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid transparent;
+            font-size: 0.9em;
+        }
+
+        .bad { background: rgba(231, 76, 60, 0.1); border-color: var(--danger); }
+        .good { background: rgba(46, 204, 113, 0.1); border-color: var(--success); }
 
         .pin-table {
             width: 100%;
             border-collapse: collapse;
             margin: 15px 0;
+            border-radius: 8px;
+            overflow: hidden;
         }
 
         .pin-table td {
@@ -101,217 +128,262 @@
             border: 1px solid var(--text-light);
         }
 
-        .cable-check {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-top: 15px;
-        }
+        .table-head { background: rgba(52, 152, 219, 0.1); font-weight: bold; }
 
-        .cable-item {
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-            border: 2px solid transparent;
-        }
-
-        .cable-bad { background: rgba(231, 76, 60, 0.1); border-color: var(--danger); }
-        .cable-good { background: rgba(46, 204, 113, 0.1); border-color: var(--success); }
-
-        .install-box {
+        .install-area {
             text-align: center;
             padding: 30px;
             background: rgba(52, 152, 219, 0.05);
-            border-radius: 10px;
+            border-radius: 12px;
             border: 2px dashed var(--primary);
         }
 
-        esp-web-install-button button {
-            background: var(--success) !important;
-            color: white !important;
-            padding: 12px 24px !important;
-            border-radius: 5px !important;
-            font-weight: bold !important;
-            cursor: pointer !important;
+        #status-console {
+            margin-top: 20px;
+            font-weight: 700;
+            color: var(--primary);
         }
 
         code {
             background: rgba(0,0,0,0.1);
-            padding: 2px 5px;
+            padding: 2px 6px;
             border-radius: 4px;
             font-family: monospace;
+            color: var(--danger);
         }
 
-        footer { text-align: center; margin-top: 40px; color: var(--text-light); font-size: 0.9em; }
+        .warning-box {
+            border-left-color: var(--warning);
+            background: rgba(230, 126, 34, 0.05);
+        }
+
+        footer { text-align: center; color: var(--text-light); margin-top: 50px; font-size: 0.9em; }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <!-- Ошибка протокола -->
-        <div id="protocol-alert" class="alert-danger">
-            <strong id="err-protocol-title">⚠ Ошибка безопасности!</strong><br>
-            <span id="err-protocol-text">Web Serial работает только через HTTPS или Localhost. Открытие файла с диска не позволит прошить плату.</span>
-        </div>
-
-        <div class="lang-switcher">
-            <button class="lang-btn" onclick="toggleLang()">Switch to English</button>
-        </div>
-
-        <header style="text-align: center; margin-bottom: 30px;">
-            <h1 id="main-title">🌱 Soil Sensor Setup</h1>
-            <p id="sub-title" style="color: var(--text-light);">Автоматическая настройка вашего датчика влажности</p>
-        </header>
-
-        <!-- Шаг 1: Железо и Кабель -->
-        <div class="card">
-            <h2><span class="step-num">1</span> <span class="t-step1-title">Проверка подключения</span></h2>
-            <p class="t-cable-text">Прежде чем прошить, убедитесь что USB-кабель умеет передавать данные:</p>
-            
-            <div class="cable-check">
-                <div class="cable-item cable-bad">
-                    <strong style="color: var(--danger);">✖ CHARGE ONLY</strong><br>
-                    <small class="t-cable-bad">Только заряжает. Плата светится, но портов в системе нет.</small>
-                </div>
-                <div class="cable-item cable-good">
-                    <strong style="color: var(--success);">✔ DATA CABLE</strong><br>
-                    <small class="t-cable-good">Передает данные. С ним в Диспетчере устройств появится COM-порт.</small>
-                </div>
-            </div>
-
-            <p style="margin-top: 20px;" class="t-pin-desc">Схема подключения датчика к ESP32:</p>
-            <table class="pin-table">
-                <tr style="font-weight: bold; background: rgba(52, 152, 219, 0.1);">
-                    <td class="t-col-sensor">Датчик</td>
-                    <td class="t-col-color">Провод</td>
-                    <td class="t-col-esp">ESP32</td>
-                </tr>
-                <tr><td>VCC</td><td class="t-red">Красный</td><td>3V3</td></tr>
-                <tr><td>GND</td><td class="t-black">Черный</td><td>GND</td></tr>
-                <tr><td>AOUT</td><td class="t-yellow">Желтый</td><td><b>GPIO 34</b></td></tr>
-            </table>
-        </div>
-
-        <!-- Шаг 2: Прошивка -->
-        <div class="card">
-            <h2><span class="step-num">2</span> <span class="t-step2-title">Установка прошивки</span></h2>
-            <p class="t-step2-desc">Используйте Chrome или Edge. Нажмите кнопку ниже и выбери твой COM-порт.</p>
-            
-            <div class="install-box">
-                <esp-web-install-button manifest="manifest.json">
-                    <button slot="activate" class="t-btn-install">УСТАНОВИТЬ ПРОШИВКУ</button>
-                    <span slot="unsupported">Браузер не поддерживает Web Serial</span>
-                </esp-web-install-button>
-
-                <div id="status-console" style="margin-top: 15px; font-weight: bold; color: var(--primary);">
-                    <span class="t-status">Статус: Готов к работе</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Шаг 3: Драйверы -->
-        <div class="card" style="border-left-color: var(--warning);">
-            <h3 style="color: var(--warning); margin-top: 0;" class="t-driver-title">⚠ Если порта нет в списке</h3>
-            <p class="t-driver-text">Нужно установить драйвер для платы (маленький чип возле USB):</p>
-            <ul style="font-size: 0.9em;">
-                <li><strong>CP2102 (квадрат):</strong> <a href="https://www.silabs.com/developers/usb-to-uart-bridge-vcp-drivers" target="_blank">Скачать</a></li>
-                <li><strong>CH340 (прямоугольник):</strong> <a href="https://learn.sparkfun.com/tutorials/how-to-install-ch340-drivers/all" target="_blank">Скачать</a></li>
-            </ul>
-        </div>
-
-        <footer>
-            Built for ESP32 WROOM 32D | 2026
-        </footer>
+<div class="container">
+    <div id="protocol-alert" class="alert-protocol">
+        <span id="err-text">⚠ Web Serial требует HTTPS! Прошивка не будет работать при открытии файла с диска.</span>
     </div>
 
-    <script>
-        // Проверка протокола
-        if (location.protocol === 'file:') {
-            document.getElementById('protocol-alert').style.display = 'block';
+    <div class="lang-switcher">
+        <button class="lang-btn" onclick="toggleLang()">Switch to English</button>
+    </div>
+
+    <header>
+        <h1 id="main-title">🌱 Soil Sensor Setup</h1>
+        <p id="sub-title" style="color: var(--text-light);">Полное руководство по сборке и прошивке ESP32</p>
+    </header>
+
+    <!-- Шаг 1: Кабель -->
+    <div class="card">
+        <div class="step-header">
+            <div class="step-num">1</div>
+            <h2 id="t-s1-title" style="margin:0">Проверка кабеля</h2>
+        </div>
+        <p id="t-s1-desc">Перед началом убедитесь, что ваш USB-кабель предназначен для передачи данных:</p>
+        <div class="cable-grid">
+            <div class="cable-box bad">
+                <strong>CHARGE ONLY</strong><br>
+                <span id="t-c-bad">Только зарядка. Устройство не появится в списке портов.</span>
+            </div>
+            <div class="cable-box good">
+                <strong>DATA CABLE</strong><br>
+                <span id="t-c-good">Передает данные. Необходим для прошивки через браузер.</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Шаг 2: Железо -->
+    <div class="card">
+        <div class="step-header">
+            <div class="step-num">2</div>
+            <h2 id="t-s2-title" style="margin:0">Схема подключения</h2>
+        </div>
+        <p id="t-s2-desc">Используйте ESP32 DevKit и емкостный датчик. Соедините их проводами:</p>
+        <table class="pin-table">
+            <tr class="table-head">
+                <td id="t-col-s">Датчик</td>
+                <td id="t-col-w">Провод</td>
+                <td id="t-col-e">ESP32</td>
+            </tr>
+            <tr><td>VCC</td><td id="t-red">Красный</td><td>3V3</td></tr>
+            <tr><td>GND</td><td id="t-black">Черный</td><td>GND</td></tr>
+            <tr><td>AOUT</td><td id="t-yellow">Желтый</td><td><strong style="color:var(--danger)">GPIO 34</strong></td></tr>
+        </table>
+        <p style="font-size: 0.85em; color: var(--warning)" id="t-s2-warn">⚠ Важно: используйте именно GPIO 34 для корректного считывания данных.</p>
+    </div>
+
+    <!-- Шаг 3: Прошивка -->
+    <div class="card">
+        <div class="step-header">
+            <div class="step-num">3</div>
+            <h2 id="t-s3-title" style="margin:0">Установка прошивки</h2>
+        </div>
+        <p id="t-s3-desc">Подключите плату к USB и нажмите кнопку. Используйте <b>Chrome</b> или <b>Edge</b>.</p>
+        <div class="install-area">
+            <esp-web-install-button manifest="manifest.json">
+                <button slot="activate" class="lang-btn" id="t-btn-i">УСТАНОВИТЬ ПРОШИВКУ</button>
+                <span slot="unsupported">Браузер не поддерживает Web Serial</span>
+            </esp-web-install-button>
+            <div id="status-console">Статус: Ожидание...</div>
+        </div>
+    </div>
+
+    <!-- Шаг 4: Драйверы -->
+    <div class="card warning-box">
+        <h3 id="t-s4-title" style="margin-top:0; color:var(--warning)">⚠ Если компьютер не видит плату</h3>
+        <p id="t-s4-desc">Проверьте чип возле USB-порта и установите нужный драйвер:</p>
+        <ul>
+            <li><strong>CP2102 (квадратный):</strong> <a href="https://www.silabs.com/developers/usb-to-uart-bridge-vcp-drivers" target="_blank">Скачать</a></li>
+            <li><strong>CH340 (прямоугольный):</strong> <a href="https://learn.sparkfun.com/tutorials/how-to-install-ch340-drivers/all" target="_blank">Скачать</a></li>
+        </ul>
+    </div>
+
+    <!-- Шаг 5: Wi-Fi -->
+    <div class="card">
+        <div class="step-header">
+            <div class="step-num">4</div>
+            <h2 id="t-s5-title" style="margin:0">Настройка Wi-Fi</h2>
+        </div>
+        <p id="t-s5-desc">После прошивки датчик создаст сеть <code>Soil-Sensor-Setup</code>. Подключитесь к ней, выберите ваш домашний Wi-Fi и введите пароль. Плата перезагрузится.</p>
+    </div>
+
+    <!-- Шаг 6: Связь и Калибровка -->
+    <div class="card">
+        <div class="step-header">
+            <div class="step-num">5</div>
+            <h2 id="t-s6-title" style="margin:0">Приложение и Калибровка</h2>
+        </div>
+        <p id="t-s6-url">Адрес в приложении: <code>https://moisture.local</code> (или IP адрес из роутера).</p>
+        <hr style="border:0; border-top:1px solid var(--text-light); opacity:0.2; margin:20px 0;">
+        <p><strong id="t-s6-cal-h">Процесс калибровки:</strong></p>
+        <ol>
+            <li id="t-s6-c1"><b>Сухо:</b> Зажмите надпись "Влажность" в приложении, чтобы увидеть <b>Raw Value</b>. Запишите его в поле "Сухо" (датчик в воздухе).</li>
+            <li id="t-s6-c2"><b>Вода:</b> Опустите датчик в воду и запишите новое значение Raw Value в поле "Вода".</li>
+            <li id="t-s6-c3">Нажмите <b>"Откалибровать"</b>. Теперь 0% — сухо, 100% — вода.</li>
+        </ol>
+    </div>
+
+    <footer>Built for ESP32 | 2026</footer>
+</div>
+
+<script>
+    if (location.protocol === 'file:') document.getElementById('protocol-alert').style.display = 'block';
+
+    const translations = {
+        ru: {
+            title: "🌱 Soil Sensor Setup",
+            subtitle: "Полное руководство по сборке и прошивке ESP32",
+            s1t: "Проверка кабеля",
+            s1d: "Перед началом убедитесь, что ваш USB-кабель предназначен для передачи данных:",
+            cbad: "Только зарядка. Устройство не появится в списке портов.",
+            cgood: "Передает данные. Необходим для прошивки через браузер.",
+            s2t: "Схема подключения",
+            s2d: "Используйте ESP32 DevKit и емкостный датчик. Соедините их проводами:",
+            cols: "Датчик", colw: "Провод", cole: "ESP32",
+            red: "Красный", black: "Черный", yellow: "Желтый",
+            s2w: "⚠ Важно: используйте именно GPIO 34 для корректного считывания данных.",
+            s3t: "Установка прошивки",
+            s3d: "Подключите плату к USB и нажмите кнопку. Используйте Chrome или Edge.",
+            btni: "УСТАНОВИТЬ ПРОШИВКУ",
+            s4t: "⚠ Если компьютер не видит плату",
+            s4d: "Проверьте чип возле USB-порта и установите нужный драйвер:",
+            s5t: "Настройка Wi-Fi",
+            s5d: "После прошивки датчик создаст сеть Soil-Sensor-Setup. Подключитесь к ней, выберите ваш Wi-Fi и введите пароль.",
+            s6t: "Приложение и Калибровка",
+            s6u: "Адрес в приложении: moisture.local (или IP адрес).",
+            s6ch: "Процесс калибровки:",
+            s6c1: "<b>Сухо:</b> Зажмите надпись 'Влажность' в приложении, чтобы увидеть <b>Raw Value</b>. Запишите его в поле 'Сухо'.",
+            s6c2: "<b>Вода:</b> Опустите датчик в воду и запишите новое Raw Value в поле 'Вода'.",
+            s6c3: "Нажмите <b>'Откалибровать'</b>.",
+            st1: "Статус: Поиск устройства...",
+            st2: "Статус: Идет прошивка... Не отключайте!",
+            st3: "Статус: Готово! Успешно прошито.",
+            st4: "Статус: Ошибка. Проверьте кабель.",
+            err: "⚠ Web Serial требует HTTPS! Прошивка не будет работать при открытии файла с диска.",
+            btn: "Switch to English"
+        },
+        en: {
+            title: "🌱 Soil Sensor Setup",
+            subtitle: "Complete guide for ESP32 assembly and flashing",
+            s1t: "Cable Check",
+            s1d: "Before starting, ensure your USB cable supports data transfer:",
+            cbad: "Charging only. Device will not appear in the port list.",
+            cgood: "Data cable. Required for browser-based flashing.",
+            s2t: "Wiring Diagram",
+            s2d: "Use ESP32 DevKit and a capacitive sensor. Connect with wires:",
+            cols: "Sensor", colw: "Wire", cole: "ESP32",
+            red: "Red", black: "Black", yellow: "Yellow",
+            s2w: "⚠ Important: Use GPIO 34 for accurate data reading.",
+            s3t: "Firmware Installation",
+            s3d: "Connect board to USB and click the button. Use Chrome or Edge.",
+            btni: "INSTALL FIRMWARE",
+            s4t: "⚠ If computer doesn't see the board",
+            s4d: "Check the chip near the USB port and install the driver:",
+            s5t: "Wi-Fi Configuration",
+            s5d: "After flashing, the sensor creates a 'Soil-Sensor-Setup' network. Connect to it, pick your Wi-Fi, and enter password.",
+            s6t: "App & Calibration",
+            s6u: "App address: moisture.local (or IP address).",
+            s6ch: "Calibration Process:",
+            s6c1: "<b>Dry:</b> Long-press 'Humidity' in the app to see <b>Raw Value</b>. Enter it in the 'Dry' field.",
+            s6c2: "<b>Wet:</b> Submerge sensor in water and enter the Raw Value in the 'Wet' field.",
+            s6c3: "Click <b>'Calibrate'</b>.",
+            st1: "Status: Searching for device...",
+            st2: "Status: Flashing... Do not disconnect!",
+            st3: "Status: Done! Flashed successfully.",
+            st4: "Status: Error. Check cable/driver.",
+            err: "⚠ Web Serial requires HTTPS! Local file opening won't work for flashing.",
+            btn: "Переключить на Русский"
         }
+    };
 
-        const translations = {
-            ru: {
-                title: "🌱 Soil Sensor Setup",
-                subtitle: "Автоматическая настройка вашего датчика влажности",
-                step1Title: "Проверка подключения",
-                cableText: "Прежде чем шить, убедись, что твой USB-кабель умеет передавать данные:",
-                cableBad: "Только заряжает. Плата светится, но портов в системе нет.",
-                cableGood: "Передает данные. С ним в Диспетчере устройств появится COM-порт.",
-                pinDesc: "Схема подключения датчика к ESP32 (Используйте GPIO 34!):",
-                colSensor: "Датчик", colColor: "Провод", colEsp: "ESP32",
-                red: "Красный", black: "Черный", yellow: "Желтый",
-                step2Title: "Установка прошивки",
-                step2Desc: "Используй Chrome или Edge. Нажми кнопку ниже и выбери твой COM-порт.",
-                btnInstall: "УСТАНОВИТЬ ПРОШИВКУ",
-                status: "Статус: Готов к работе",
-                driverTitle: "⚠ Если порта нет в списке",
-                driverText: "Установи драйвер для чипа на твоей плате:",
-                errTitle: "⚠ Ошибка безопасности!",
-                errText: "Web Serial работает только через HTTPS или Localhost. Открытие файла с диска не позволит прошить плату.",
-                langBtn: "Switch to English"
-            },
-            en: {
-                title: "🌱 Soil Sensor Setup",
-                subtitle: "Automatic moisture sensor configuration",
-                step1Title: "Connection Check",
-                cableText: "Before flashing, make sure your USB cable supports data transfer:",
-                cableBad: "Charging only. Board lights up, but no ports appear in the system.",
-                cableGood: "Data cable. This will show a COM port in Device Manager.",
-                pinDesc: "Sensor wiring diagram (Use GPIO 34!):",
-                colSensor: "Sensor", colColor: "Wire", colEsp: "ESP32",
-                red: "Red", black: "Black", yellow: "Yellow",
-                step2Title: "Firmware Installation",
-                step2Desc: "Use Chrome or Edge. Click the button below and select your COM port.",
-                btnInstall: "INSTALL FIRMWARE",
-                status: "Status: Ready",
-                driverTitle: "⚠ If port is missing",
-                driverText: "Install the driver for the USB chip on your board:",
-                errTitle: "⚠ Security Error!",
-                errText: "Web Serial requires HTTPS or Localhost. Opening a local file prevents flashing.",
-                langBtn: "Переключить на Русский"
-            }
-        };
+    let currentLang = 'ru';
+    function toggleLang() {
+        currentLang = currentLang === 'ru' ? 'en' : 'ru';
+        const t = translations[currentLang];
+        document.getElementById('main-title').innerText = t.title;
+        document.getElementById('sub-title').innerText = t.subtitle;
+        document.getElementById('t-s1-title').innerText = t.s1t;
+        document.getElementById('t-s1-desc').innerText = t.s1d;
+        document.getElementById('t-c-bad').innerText = t.cbad;
+        document.getElementById('t-c-good').innerText = t.cgood;
+        document.getElementById('t-s2-title').innerText = t.s2t;
+        document.getElementById('t-s2-desc').innerText = t.s2d;
+        document.getElementById('t-col-s').innerText = t.cols;
+        document.getElementById('t-col-w').innerText = t.colw;
+        document.getElementById('t-col-e').innerText = t.cole;
+        document.getElementById('t-red').innerText = t.red;
+        document.getElementById('t-black').innerText = t.black;
+        document.getElementById('t-yellow').innerText = t.yellow;
+        document.getElementById('t-s2-warn').innerText = t.s2w;
+        document.getElementById('t-s3-title').innerText = t.s3t;
+        document.getElementById('t-s3-desc').innerText = t.s3d;
+        document.getElementById('t-btn-i').innerText = t.btni;
+        document.getElementById('t-s4-title').innerText = t.s4t;
+        document.getElementById('t-s4-desc').innerText = t.s4d;
+        document.getElementById('t-s5-title').innerText = t.s5t;
+        document.getElementById('t-s5-desc').innerText = t.s5d;
+        document.getElementById('t-s6-title').innerText = t.s6t;
+        document.getElementById('t-s6-url').innerHTML = t.s6u;
+        document.getElementById('t-s6-cal-h').innerText = t.s6ch;
+        document.getElementById('t-s6-c1').innerHTML = t.s6c1;
+        document.getElementById('t-s6-c2').innerHTML = t.s6c2;
+        document.getElementById('t-s6-c3').innerHTML = t.s6c3;
+        document.getElementById('err-text').innerText = t.err;
+        document.querySelector('.lang-btn').innerText = t.btn;
+    }
 
-        let currentLang = 'ru';
-
-        function toggleLang() {
-            currentLang = currentLang === 'ru' ? 'en' : 'ru';
-            const t = translations[currentLang];
-            
-            document.getElementById('main-title').innerText = t.title;
-            document.getElementById('sub-title').innerText = t.subtitle;
-            document.querySelector('.t-step1-title').innerText = t.step1Title;
-            document.querySelector('.t-cable-text').innerText = t.cableText;
-            document.querySelector('.t-cable-bad').innerText = t.cableBad;
-            document.querySelector('.t-cable-good').innerText = t.cableGood;
-            document.querySelector('.t-pin-desc').innerText = t.pinDesc;
-            document.querySelector('.t-col-sensor').innerText = t.colSensor;
-            document.querySelector('.t-col-color').innerText = t.colColor;
-            document.querySelector('.t-col-esp').innerText = t.colEsp;
-            document.querySelector('.t-red').innerText = t.red;
-            document.querySelector('.t-black').innerText = t.black;
-            document.querySelector('.t-yellow').innerText = t.yellow;
-            document.querySelector('.t-step2-title').innerText = t.step2Title;
-            document.querySelector('.t-step2-desc').innerText = t.step2Desc;
-            document.querySelector('.t-btn-install').innerText = t.btnInstall;
-            document.querySelector('.t-status').innerText = t.status;
-            document.querySelector('.t-driver-title').innerText = t.driverTitle;
-            document.querySelector('.t-driver-text').innerText = t.driverText;
-            document.getElementById('err-protocol-title').innerText = t.errTitle;
-            document.getElementById('err-protocol-text').innerText = t.errText;
-            document.querySelector('.lang-btn').innerText = t.langBtn;
-        }
-
-        // Слушатель статуса прошивки
-        document.querySelector('esp-web-install-button').addEventListener('state-changed', (ev) => {
-            const s = ev.detail.state;
-            const statusNode = document.querySelector('.t-status');
-            if (s === 'INITIALIZING') statusNode.innerText = currentLang === 'ru' ? "Статус: Поиск порта..." : "Status: Looking for port...";
-            if (s === 'INSTALLING') statusNode.innerText = currentLang === 'ru' ? "Статус: Шьём... Не отключай!" : "Status: Flashing... Don't unplug!";
-            if (s === 'FINISHED') statusNode.innerText = currentLang === 'ru' ? "Статус: Успех! Переходи к шагу 3." : "Status: Success! Go to step 3.";
-            if (s === 'ERROR') statusNode.innerText = currentLang === 'ru' ? "Статус: Ошибка прошивки." : "Status: Error during flash.";
-        });
-    </script>
+    document.querySelector('esp-web-install-button').addEventListener('state-changed', (ev) => {
+        const s = ev.detail.state;
+        const console = document.getElementById('status-console');
+        const t = translations[currentLang];
+        if (s === 'INITIALIZING') console.innerText = t.st1;
+        if (s === 'INSTALLING') console.innerText = t.st2;
+        if (s === 'FINISHED') console.innerText = t.st3;
+        if (s === 'ERROR') console.innerText = t.st4;
+    });
+</script>
 </body>
 </html>
